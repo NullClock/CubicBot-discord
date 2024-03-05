@@ -55,7 +55,7 @@ const GUILD_ID = '1201312485542723616';
   }
 })();
 
-client.on('interactionCreate', async inr => {
+client.on('interactionCreate', async (inr) => {
   if (!inr.isChatInputCommand()) return;
   let i = 0;
   let pi = 0;
