@@ -6,6 +6,9 @@ const {
   Collection
 } = require('discord.js');
 const fs = require('fs');
+const express = require('express');
+const app = express();
+const port = 3000;
 require('dotenv').config();
 
 const client = new Client({
@@ -24,7 +27,7 @@ client.commands = new Collection();
 const commands = [];
 const CLIENT_ID = process.env.CLIENT_ID;
 const TOKEN = process.env.TOKEN;
-const REST = new REST({ version: '10' }).setToken(TOKEN);
+const rest = new REST({ version: '10' }).setToken(TOKEN);
 const files = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 files.forEach(file => {
@@ -62,5 +65,8 @@ client.on('interactionCreate', async (inr) => {
     console.error(`[ERROR] Error when executing ${inr.commandName}: ${e}`);
   }
 });
+
+app.get('/', (req, res) => res.send('Server made to keep bot running 24/7.'));
+app.listen(port, () => console.log(`Server running on port ${port}`));
 
 client.login(TOKEN);
