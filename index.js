@@ -66,7 +66,7 @@ setTimeout(async () => {
   }
 
   for (const command of pCommandDatas) {
-    await await interaction
+    await disint
       .createApplicationCommand(command, '1201312485542723616');
     console.log("[PRIVATE COMMAND REGISTERED] /" + command.name + " in guild " + GUILD_ID);
   }
