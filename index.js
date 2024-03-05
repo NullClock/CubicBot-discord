@@ -55,22 +55,22 @@ await fs.readdir('./commands/', (err, files) => {
     } else {
       return;
     }
-
-    setTimeout(async () => {
-      for (const command of commandDatas) {
-        await disint
-          .createApplicationCommand(command);
-        console.log("[COMMAND REGISTERED] /" + command.name);
-      }
-
-      for (const command of pCommandDatas) {
-        await await interaction
-          .createApplicationCommand(command, '1201312485542723616');
-        console.log("[PRIVATE COMMAND REGISTERED] /" + command.name + " in guild " + GUILD_ID);
-      }
-    }, 1500);
   });
 });
+
+setTimeout(async () => {
+  for (const command of commandDatas) {
+    await disint
+      .createApplicationCommand(command);
+    console.log("[COMMAND REGISTERED] /" + command.name);
+  }
+
+  for (const command of pCommandDatas) {
+    await await interaction
+      .createApplicationCommand(command, '1201312485542723616');
+    console.log("[PRIVATE COMMAND REGISTERED] /" + command.name + " in guild " + GUILD_ID);
+  }
+}, 1500);
 
 // const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 const CLIENT_ID = process.env.CLIENT_ID;
