@@ -1,16 +1,12 @@
-import {
+const {
   REST,
   Routes,
   Client,
-  GatewayIntentBits
-} from 'discord.js';
-import {
-  createRequire
-} from 'module';
-import fs from 'fs';
-import 'dotenv/config'
-
-const require = createRequire(import.meta.url);
+  GatewayIntentBits,
+  Collection
+} = require('discord.js');
+const fs = require('fs');
+require('dotenv').config();
 
 const client = new Client({
   intents: [
@@ -24,51 +20,47 @@ client.on('ready', () => {
   console.log(`${client.user.tag} is alive!`);
 });
 
+client.commands = new Collection();
 const commands = [];
-const commandDatas = [];
-
-await fs.readdir('./commands/', (err, files) => {
-  if (err) throw new Error('Error while loading bot commands: ' + err);
-
-  files.forEach(file => {
-    const command = require(`./commands/${file}`);
-    commands.push(command);
-    commandDatas.push(command.data.toJSON());
-    return;
-  });
-});
-
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = '1201312485542723616';
+const TOKEN = process.env.TOKEN;
+const REST = new REST({ version: '10' }).setToken(TOKEN);
+const files = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+files.forEach(file => {
+  const command = require(`./commands/${file}`);
+
+  if ('data' in command && 'execute' in command) {
+    client.commands.set(command.data.name, command);
+    commands.push(command.data.toJSON())
+  } else {
+    console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+  }
+});
 
 (async()=>{
   try {
-    console.log('Started refreshing application (/) commands.');
-    await rest.put(
-      Routes.applicationCommands(CLIENT_ID),
-      { body: commandDatas }
-    );
-    console.log('Successfully reloaded application (/) commands.');
-  } catch (error) {
-    console.error(error);
+    console.log(`Started refreshing ${commands.length} application (/) commands.`);
+    const data = await rest.put(
+			Routes.applicationCommands(CLIENT_ID),
+			{ body: commands },
+		);
+    console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+  } catch(e) {
+    console.error(`[ERROR] Error when registering slash commands: ${e}`);
   }
 })();
 
 client.on('interactionCreate', async (inr) => {
   if (!inr.isChatInputCommand()) return;
-  let i = 0;
-  let pi = 0;
+  const command = client.commands.get(inr.commandName);
+  if (!command) return;
 
-  commands.forEach(async command => {
-    if (inr.name == command.name && i != commands.length - 1) {
-      await command.code(client, inr);
-      i++
-    } else if (i == commands.length - 1) {
-      i = 0;
-      return;
-    }
-  });
+  try {
+    await command.execute(client, inr);
+  } catch (e) {
+    console.error(`[ERROR] Error when executing ${inr.commandName}: ${e}`);
+  }
 });
 
-client.login(process.env.TOKEN);
+client.login(TOKEN);
