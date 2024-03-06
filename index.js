@@ -25,10 +25,13 @@ client.on('ready', () => {
 
 client.commands = new Collection();
 const commands = [];
+const pCommands = [];
 const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
 const TOKEN = process.env.TOKEN;
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 const files = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const privcFiles = fs.readdirSync('./commands/admin').filter(file => file.endsWith('.js'));
 
 files.forEach(file => {
   const command = require(`./commands/${file}`);
@@ -41,6 +44,17 @@ files.forEach(file => {
   }
 });
 
+privcFiles.forEach(file => {
+  const command = require(`./commands/admin/${file}`);
+
+  if ('data' in command && 'execute' in command) {
+    client.commands.set(command.data.name, command);
+    pCommands.push(command.data.toJSON())
+  } else {
+    console.log(`[WARNING] The private command at ${filePath} is missing a required "data" or "execute" property.`);
+  }
+});
+
 (async()=>{
   try {
     console.log(`Started refreshing ${commands.length} application (/) commands.`);
@@ -48,7 +62,12 @@ files.forEach(file => {
 			Routes.applicationCommands(CLIENT_ID),
 			{ body: commands },
 		);
-    console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+    const data2 = await rest.put(
+			Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+			{ body: pCommands },
+		);
+    console.log(`Successfully reloaded ${data.length} public application (/) commands.`);
+    console.log(`Successfully reloaded ${data2.length} private application (/) commands.`);
   } catch(e) {
     console.error(`[ERROR] Error when registering slash commands: ${e}`);
   }
