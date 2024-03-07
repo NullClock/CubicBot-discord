@@ -3,7 +3,8 @@ const {
   Routes,
   Client,
   GatewayIntentBits,
-  Collection
+  Collection,
+  ActivityType
 } = require('discord.js');
 const fs = require('fs');
 const express = require('express');
@@ -17,10 +18,6 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessages
   ]
-});
-
-client.on('ready', () => {
-  console.log(`${client.user.tag} is alive!`);
 });
 
 client.commands = new Collection();
@@ -55,20 +52,20 @@ privcFiles.forEach(file => {
   }
 });
 
-(async()=>{
+(async () => {
   try {
     console.log(`Started refreshing ${commands.length + pCommands.length} application (/) commands} application (/) commands.`);
     const data = await rest.put(
-			Routes.applicationCommands(CLIENT_ID),
-			{ body: commands },
-		);
+      Routes.applicationCommands(CLIENT_ID),
+      { body: commands },
+    );
     const data2 = await rest.put(
-			Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-			{ body: pCommands },
-		);
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+      { body: pCommands },
+    );
     console.log(`Successfully reloaded ${data.length} public application (/) commands.`);
     console.log(`Successfully reloaded ${data2.length} private application (/) commands.`);
-  } catch(e) {
+  } catch (e) {
     console.error(`[ERROR] Error when registering slash commands: ${e}`);
   }
 })();
@@ -83,6 +80,42 @@ client.on('interactionCreate', async (inr) => {
   } catch (e) {
     console.error(`[ERROR] Error when executing ${inr.commandName}: ${e}`);
   }
+});
+
+(async()=>{await client.guilds.cache.fetch()});
+
+let desc = [
+  { string: `${commands.length} commands`, type: ActivityType.Listening },
+  { string: `${client.guilds.cache.size} servers`, type: ActivityType.Watching },
+  { string: 'don\'t judge me it\'s average', type: ActivityType.Custom}
+];
+
+let rand;
+let randItem;
+let activity;
+
+function funny(val) {
+  rand = Math.floor(Math.random() * desc.length);
+  randItem = desc[rand];
+  activity = { name: `${randItem.string}`, type: (randItem.type ? randItem.type : ActivityType.Playing) }
+}
+
+client.on('ready', () => {
+  console.log(`${client.user.tag} is alive!`);
+
+  funny();
+  client.user.setPresence({
+    activities: [activity],
+    status: 'online'
+  });
+
+  setInterval(() => {
+    funny();
+    client.user.setPresence({
+      activities: [activity],
+      status: 'online'
+    });
+  }, 5000);
 });
 
 app.get('/', (req, res) => res.send('Server made to keep bot running 24/7.'));
