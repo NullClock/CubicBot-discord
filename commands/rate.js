@@ -22,7 +22,7 @@ async function sleep(ms) {
 
 function rate(item) {
 	let hash = 0;
-  for (let i = 0; i < item.length(); i++) {
+  for (let i = 0; i < item.length; i++) {
     hash = (hash << 5) - hash + item.charCodeAt(i);
   }
 	let res = (Math.abs(hash) % 100) + 1;
