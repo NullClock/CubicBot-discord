@@ -40,7 +40,7 @@ files.forEach(file => {
     client.commands.set(command.data.name, command);
     commands.push(command.data.toJSON())
   } else {
-    console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+    console.log(`[WARNING] The command at ${file} is missing a required "data" or "execute" property.`);
   }
 });
 
@@ -51,13 +51,13 @@ privcFiles.forEach(file => {
     client.commands.set(command.data.name, command);
     pCommands.push(command.data.toJSON())
   } else {
-    console.log(`[WARNING] The private command at ${filePath} is missing a required "data" or "execute" property.`);
+    console.log(`[WARNING] The private command at ${file} is missing a required "data" or "execute" property.`);
   }
 });
 
 (async()=>{
   try {
-    console.log(`Started refreshing ${commands.length} application (/) commands.`);
+    console.log(`Started refreshing ${commands.length + pCommands.length} application (/) commands} application (/) commands.`);
     const data = await rest.put(
 			Routes.applicationCommands(CLIENT_ID),
 			{ body: commands },

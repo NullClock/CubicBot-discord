@@ -6,6 +6,6 @@
         "node_modules": true,
         ".github": true,
         ".gitignore": true,
-        "thisisidx": true
+        ".env": true
     }
 }
