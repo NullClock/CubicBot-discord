@@ -1,6 +1,14 @@
 const {
   SlashCommandBuilder
 } = require('discord.js');
+
+const replaceWith = {
+	"your": "my",
+	"my": "your",
+	"me": "you",
+	"you": "I",
+	"I": "you"
+};
   
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,16 +16,24 @@ module.exports = {
     .setDescription('Rates something')
 		.addStringOption(option =>
 			option.setName('thing')
-				.setDescription('The thing to rape- oops, rate...')
+				.setDescription('The thing to rate')
 				.setRequired(true)),
   async execute(client, inr) {
-		const thing = inr.options.getString('thing');
+		const thing = replaceYouMe(inr.options.getString('thing'));
     await inr.reply(`I rate ${thing} a ${rate(thing)}%`);
   }
 }
 
 async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function replaceYouMe(text) {
+	for (const key of Object.keys(replaceWith)) {
+		text = text.replace(key, replaceWith[key]);
+	}
+
+	return text;
 }
 
 function rate(item) {
